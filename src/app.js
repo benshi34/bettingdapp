@@ -33,7 +33,7 @@ window.App = {
       }
 
       if (accs.length == 0) {
-        alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.");
+        alert("Couldn't get any accounts!");
         return;
       }
 
@@ -90,7 +90,7 @@ window.App = {
     callEvents: function() {
     var self = this;
     var meta;
-          OraclizeContract.deployed().then(function(instance) {
+          PredictionMarket.deployed().then(function(instance) {
             meta = instance;
 
               App.callingEvents(instance);
