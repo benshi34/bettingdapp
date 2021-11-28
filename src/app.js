@@ -1,117 +1,99 @@
-import { default as Web3} from 'web3';
-import { default as contract } from 'truffle-contract'
-
-import contract_build_artifacts from '../../build/contracts/PredictionMarket.json'
-import { transferPromiseness } from 'chai-as-promised';
-
-var PredictionMarket = contract(contract_build_artifacts);
-
-var accounts;
-var account;
-
-document.onreadystatechange = function () {
-    if (document.readyState === "complete") {
-      ready();
-      fetch();
-      // transfer()? 
+App = {
+    loading: false,
+    contracts: {},
+  
+    load: async () => {
+      await App.loadWeb3()
+      await App.loadAccount()
+      await App.loadContract()
+      await App.render()
+    },
+    
+    // Copied from metamask implementation, link below
+    // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
+    loadWeb3: async () => {
+      if (typeof web3 !== 'undefined') {
+        App.web3Provider = web3.currentProvider
+        web3 = new Web3(web3.currentProvider)
+      } else {
+        window.alert("Please connect to Metamask.")
+      }
+      // Modern dapp browsers...
+      if (window.ethereum) {
+        window.web3 = new Web3(ethereum)
+        try {
+          // Request account access if needed
+          await ethereum.enable()
+          // Acccounts now exposed
+          web3.eth.sendTransaction({/* ... */})
+        } catch (error) {
+          // User denied account access...
+        }
+      }
+      // Legacy dapp browsers...
+      else if (window.web3) {
+        App.web3Provider = web3.currentProvider
+        window.web3 = new Web3(web3.currentProvider)
+        // Acccounts always exposed
+        web3.eth.sendTransaction({/* ... */})
+      }
+      // Non-dapp browsers...
+      else {
+        console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
+      }
+    },
+  
+    loadAccount: async () => {
+      // Set the current blockchain account
+      App.account = web3.eth.accounts[0]
+    },
+  
+    loadContract: async () => {
+      // Create a JavaScript version of the smart contract
+      const todoList = await $.getJSON('TodoList.json')
+      App.contracts.TodoList = TruffleContract(todoList)
+      App.contracts.TodoList.setProvider(App.web3Provider)
+  
+      // Populate the smart contract with values from the blockchain
+      App.todoList = await App.contracts.TodoList.deployed()
+    },
+  
+    render: async () => {
+      // Prevent double render
+      if (App.loading) {
+        return
+      }
+  
+      // Update app loading state
+      App.setLoading(true)
+  
+      // Render Account
+      $('#account').html(App.account)
+  
+      // Cancel Order, Make Order, See Balance
+  
+      // Update loading state
+      App.setLoading(false)
+    },
+  
+    // Write cancel order, make order, see balance functions
+  
+    setLoading: (boolean) => {
+      App.loading = boolean
+      const loader = $('#loader')
+      const content = $('#content')
+      if (boolean) {
+        loader.show()
+        content.hide()
+      } else {
+        loader.hide()
+        content.show()
+      }
     }
   }
-
-window.App = {
   
-  start: function() {
-    var self = this;
-
-    PredictionMarket.setProvider(web3.currentProvider);
-
-    // Get the initial account balance so it can be displayed.
-    web3.eth.getAccounts(async function(err, accs) {
-
-      if (err != null) {
-        alert("There was an error fetching your accounts.");
-        return;
-      }
-
-      if (accs.length == 0) {
-        alert("Couldn't get any accounts!");
-        return;
-      }
-
-      accounts = accs;
-      web3.eth.defaultAccount = accounts[0];
-      account = accounts[0];
-
-      self.callEvents();
-    });
-  },
-  
-  callingEvents: function(instance){
-    var LogInfo = instance.LogInfo({},{fromBlock: 0, toBlock: 'latest'});
-    var LogFunctioning = instance.LogFunctioning({},{fromBlock: 0, toBlock: 'latest'});
-    var LogDeposit = instance.LogDeposit({},{fromBlock: 0, toBlock: 'latest'});
-    var LogTransfer = instance.LogTransfer({},{fromBlock: 0, toBlock: 'latest'});
-
-    LogFunctioning.watch(function(err, result){
-      if(!err){
-        console.info(result.args)
-      }else{
-        console.error(err)
-      }
+  $(() => {
+    $(window).load(() => {
+      App.load()
     })
-
-    LogInfo.watch(function(err, result){
-      if(!err){
-        console.info(result.args)
-      }else{
-        console.error(err)
-      }
-    })
-
-    LogDeposit.watch(function(err, result){
-      if(!err){
-        console.info(result.args.sender)
-        console.info(result.args.amount)
-        console.info(result.args.executed)
-      }else{
-        console.error(err)
-      }
-    })
-
-    LogTransfer.watch(function(err, result){
-      if(!err){
-         console.info(result.args.winner)
-         console.info(result.args.win)
-      }else{
-        console.error(err)
-      }
-    })
-  },
-
-    callEvents: function() {
-    var self = this;
-    var meta;
-          PredictionMarket.deployed().then(function(instance) {
-            meta = instance;
-
-              App.callingEvents(instance);
-    })
-  }        
-          
-};
-
-  window.addEventListener('load', function() {
-  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-  if (typeof web3 !== 'undefined') {
-    ethereum.enable();
-    console.warn("Using web3 detected from external source.")
-    // Use Mist/MetaMask's provider
-    window.web3 = new Web3(web3.currentProvider);
-  } else {
-    console.warn("No web3 detected. Falling back to http://127.0.0.1:9545.");
-    // fallback
-    window.web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:9545"));
-  }
-
-  // Start App
-  App.start();
-});
+  })
