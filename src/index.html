@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <title>Betting Contract</title>
+
+  <script src="./app.js"> </script>
+   <!-- Bootstrap CSS -->
+   <link rel="stylesheet"  href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+  
+  </head>
+<body>
+  
+  <div class ="container">
+    <br>
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Betting Contract</h2>
+        <form id="bet">
+          <div class="form-group">
+            <label>Account you want to bet on</label>
+            <input type=" type" class="form-control" id="accountID">
+          </div>
+
+          <p id="message" style="word-wrap: break-word"></p>
+
+          <div class="form-group">
+              <label>Team:</label>
+              <select class="form-control" id="team">
+                <option>Home</option>
+                <option>Away</option>
+              </select>
+          </div>
+
+          <div class="form-group">
+            <label>Bet Amount (in ether): </label>
+            <input type="text" class="form-control" id="betAmount">
+          </div>
+
+          <div class="form-group">
+            <label>Quantity: </label>
+            <input type="text" class="form-control" id="betQuantity">
+          </div>
+          <input type="submit" value="Submit" class="btn-primary" /> 
+          
+          <h2>Other Operations:</h2>
+          <div class="form-group">
+            <label>Cancel Orders: </label>
+            <input type="submit" value="Submit" class="btn-primary">
+          </div>
+          <div class="form-group">
+            <label>Check Balance: </label>
+            <input type="submit" value="Submit" class="btn-primary">
+          </div>
+         </form>
+ </div>
+</body>
+</html>
