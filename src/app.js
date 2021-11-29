@@ -1,12 +1,11 @@
 App = {
-    loading: false,
     contracts: {},
   
     load: async () => {
       await App.loadWeb3()
       await App.loadAccount()
       await App.loadContract()
-      await App.render()
+      await App.render() 
     },
     
     // Copied from metamask implementation, link below
@@ -44,18 +43,21 @@ App = {
     },
   
     loadAccount: async () => {
-      // Set the current blockchain account
+      // Set the current blockchain account: Need to change to set account we want to modify
       App.account = web3.eth.accounts[0]
-    },
+      console.log(App.account)
+    }, 
   
     loadContract: async () => {
       // Create a JavaScript version of the smart contract
-      const todoList = await $.getJSON('TodoList.json')
-      App.contracts.TodoList = TruffleContract(todoList)
-      App.contracts.TodoList.setProvider(App.web3Provider)
+      const predictionmarket = await $.getJSON('PredictionMarket.json')
+      App.contracts.PredictionMarket = TruffleContract(predictionmarket)
+      App.contracts.PredictionMarket.setProvider(App.web3Provider)
   
       // Populate the smart contract with values from the blockchain
-      App.todoList = await App.contracts.TodoList.deployed()
+      App.PredictionMarket = await App.contracts.PredictionMarket.deployed()
+
+      console.log(App.PredictionMarket)
     },
   
     render: async () => {
@@ -63,37 +65,17 @@ App = {
       if (App.loading) {
         return
       }
-  
-      // Update app loading state
-      App.setLoading(true)
-  
       // Render Account
       $('#account').html(App.account)
   
       // Cancel Order, Make Order, See Balance
-  
-      // Update loading state
-      App.setLoading(false)
     },
   
     // Write cancel order, make order, see balance functions
-  
-    setLoading: (boolean) => {
-      App.loading = boolean
-      const loader = $('#loader')
-      const content = $('#content')
-      if (boolean) {
-        loader.show()
-        content.hide()
-      } else {
-        loader.hide()
-        content.show()
-      }
-    }
   }
   
   $(() => {
     $(window).load(() => {
       App.load()
-    })
-  })
+    }) 
+  }) 

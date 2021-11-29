@@ -5,11 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Betting Contract</title>
-
-  <script src="./app.js"> </script>
-   <!-- Bootstrap CSS -->
-   <link rel="stylesheet"  href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-  
   </head>
 <body>
   
@@ -21,9 +16,8 @@
         <form id="bet">
           <div class="form-group">
             <label>Account you want to bet on</label>
-            <input type=" type" class="form-control" id="accountID">
+            <input type=" type" class="form-control" id="account">
           </div>
-
           <p id="message" style="word-wrap: break-word"></p>
 
           <div class="form-group">
@@ -56,5 +50,9 @@
           </div>
          </form>
  </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="vendor/truffle-contract/dist/truffle-contract.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
