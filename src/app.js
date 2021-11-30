@@ -41,7 +41,7 @@ App = {
         console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
       }
     },
-  
+
     loadAccount: async () => {
       // Set the current blockchain account: Need to change to set account we want to modify
       App.account = web3.eth.accounts[0]
@@ -67,15 +67,16 @@ App = {
       }
       // Render Account
       $('#account').html(App.account)
-  
+      
+      // Load Balance
+
       // Cancel Order, Make Order, See Balance
     },
-  
     // Write cancel order, make order, see balance functions
   }
   
   $(() => {
-    $(window).load(() => {
+    $(window).on('load', (() => {
       App.load()
-    }) 
+    })) 
   }) 

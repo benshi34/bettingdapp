@@ -5,6 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Betting Contract</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="vendor/web3/dist/web3.min.js"></script>
+    <script src="vendor/truffle-contract/dist/truffle-contract.js"></script>
+    <script src="app.js"></script>
   </head>
 <body>
   
@@ -15,17 +19,15 @@
         <h2>Betting Contract</h2>
         <form id="bet">
           <div class="form-group">
-            <label>Account you want to bet on</label>
-            <input type=" type" class="form-control" id="account">
+            <label>Account you want to bet on (Enter Address)</label>
+            <input type=" type" class="form-control" id="address">
           </div>
-          <p id="message" style="word-wrap: break-word"></p>
+          <button onclick="balance()" type="button">Get Balance</button>
+          <p id="balance" style="word-wrap: break-word"></p>
 
           <div class="form-group">
-              <label>Team:</label>
-              <select class="form-control" id="team">
-                <option>Home</option>
-                <option>Away</option>
-              </select>
+              <label>Team: (0 for home, 1 for away)</label>
+              <input type="text" class="form-control" id="team">
           </div>
 
           <div class="form-group">
@@ -43,16 +45,25 @@
           <div class="form-group">
             <label>Cancel Orders: </label>
             <input type="submit" value="Submit" class="btn-primary">
-          </div>
-          <div class="form-group">
-            <label>Check Balance: </label>
-            <input type="submit" value="Submit" class="btn-primary">
+          </div>            
           </div>
          </form>
  </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="vendor/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="vendor/truffle-contract/dist/truffle-contract.js"></script>
-    <script src="app.js"></script>
+    <script>
+      function balance() {
+        var address, wei, balance
+        address = document.getElementById("address").value
+        try {
+            web3.eth.getBalance(address, function (error, wei) {
+                if (!error) {
+                    var balance = web3.fromWei(wei, 'ether');
+                    document.getElementById("balance").innerHTML = balance + " ETH";
+                }
+            });
+        } catch (err) {
+            document.getElementById("balance").innerHTML = err;
+        }
+      }
+    </script>
 </body>
 </html>
