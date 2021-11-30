@@ -39,12 +39,13 @@
             <label>Quantity: </label>
             <input type="text" class="form-control" id="betQuantity">
           </div>
-          <input type="submit" value="Submit" class="btn-primary" /> 
+          <button onclick="App.submitBet()" type="button">Submit</button>
+          <p id="message" style="word-wrap: break-word"></p>
           
           <h2>Other Operations:</h2>
           <div class="form-group">
             <label>Cancel Orders: </label>
-            <input type="submit" value="Submit" class="btn-primary">
+            <button onclick="App.cancelOrders" type="button">Submit</button>
           </div>            
           </div>
          </form>

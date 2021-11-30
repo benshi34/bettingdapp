@@ -45,6 +45,7 @@ App = {
     loadAccount: async () => {
       // Set the current blockchain account: Need to change to set account we want to modify
       App.account = web3.eth.accounts[0]
+      web3.eth.defaultAccount = web3.eth.accounts[0]
       console.log(App.account)
     }, 
   
@@ -67,12 +68,19 @@ App = {
       }
       // Render Account
       $('#account').html(App.account)
-      
-      // Load Balance
-
-      // Cancel Order, Make Order, See Balance
     },
     // Write cancel order, make order, see balance functions
+
+    submitBet: async () => {
+      const team = $('#team').val()
+      const betAmount = $('#betAmount').val()
+      const betQuantity = $('#betQuantity').val()
+      await App.PredictionMarket.bid(betAmount, betQuantity, team)
+    },
+
+    cancelOrders: async () => {
+      await App.PredictionMarket.cancelAll()
+    },
   }
   
   $(() => {
