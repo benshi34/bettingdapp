@@ -1,3 +1,6 @@
+var account
+var outcome
+
 App = {
     contracts: {},
   
@@ -75,12 +78,38 @@ App = {
       const team = $('#team').val()
       const betAmount = $('#betAmount').val()
       const betQuantity = $('#betQuantity').val()
-      await App.PredictionMarket.bid(betAmount, betQuantity, team)
+      await App.PredictionMarket.bid(betAmount, betQuantity, team, {from: account, gas:3000000, value:(betAmount*betQuantity)})
     },
 
     cancelOrders: async () => {
-      await App.PredictionMarket.cancelAll()
+      await App.PredictionMarket.cancelAll({to: account, gas:3000000})
+      document.getElementById("cancelMsg").innerHTML = "Done!"
     },
+
+    balance: async () => {
+      var wei, balance
+      account = document.getElementById("address").value
+      try {
+          web3.eth.getBalance(account, function (error, wei) {
+              if (!error) {
+                  var balance = web3.fromWei(wei, 'ether');
+                  document.getElementById("balance").innerHTML = balance + " ETH";
+              }
+          });
+      } catch (err) {
+          document.getElementById("balance").innerHTML = err;
+      }
+    },
+    
+    redeem: async () => {
+      await App.PredictionMarket.redeem(outcome, {to: account, gas:3000000})
+      document.getElementById("redeemMsg").innerHTML = "Done! Check your balance."
+    },
+
+    outcome: async () => {
+      outcome = document.getElementById("outcome").value
+      document.getElementById("outcomeMsg").innerHTML = "Done!"
+    }
   }
   
   $(() => {

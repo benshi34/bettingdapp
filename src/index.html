@@ -22,7 +22,7 @@
             <label>Account you want to bet on (Enter Address)</label>
             <input type=" type" class="form-control" id="address">
           </div>
-          <button onclick="balance()" type="button">Get Balance</button>
+          <button onclick="App.balance()" type="button">Get Balance + Switch Accounts</button>
           <p id="balance" style="word-wrap: break-word"></p>
 
           <div class="form-group">
@@ -31,7 +31,7 @@
           </div>
 
           <div class="form-group">
-            <label>Bet Amount (in ether): </label>
+            <label>Bet Amount (in wei): </label>
             <input type="text" class="form-control" id="betAmount">
           </div>
 
@@ -45,26 +45,25 @@
           <h2>Other Operations:</h2>
           <div class="form-group">
             <label>Cancel Orders: </label>
-            <button onclick="App.cancelOrders" type="button">Submit</button>
-          </div>            
+          </div>
+          <button onclick="App.cancelOrders()" type="button">Submit</button>
+          <p id="cancelMsg" style="word-wrap: break-word"></p>
+          <div class="form-group">
+            <label>Decided Winnning Outcome (W/O Oracle): </label>
+            <input type="text" class="form-control" id="outcome">
+          </div>
+          <button onclick="App.outcome()" type="button">Submit</button>
+          <p id="outcomeMsg" style="word-wrap: break-word"></p>
+          <div class="form-group">
+            <label>Redeem winnings: </label>
+          </div>
+          <button onclick="App.redeem()" type="button">Submit</button>
+          <p id="redeemMsg" style="word-wrap: break-word"></p>              
           </div>
          </form>
  </div>
     <script>
-      function balance() {
-        var address, wei, balance
-        address = document.getElementById("address").value
-        try {
-            web3.eth.getBalance(address, function (error, wei) {
-                if (!error) {
-                    var balance = web3.fromWei(wei, 'ether');
-                    document.getElementById("balance").innerHTML = balance + " ETH";
-                }
-            });
-        } catch (err) {
-            document.getElementById("balance").innerHTML = err;
-        }
-      }
+      
     </script>
 </body>
 </html>
