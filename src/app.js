@@ -1,6 +1,3 @@
-var account
-var outcome
-
 App = {
     contracts: {},
   
@@ -78,19 +75,21 @@ App = {
       const team = $('#team').val()
       const betAmount = $('#betAmount').val()
       const betQuantity = $('#betQuantity').val()
-      await App.PredictionMarket.bid(betAmount, betQuantity, team, {from: account, gas:3000000, value:(betAmount*betQuantity)})
+      await App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:(betAmount*betQuantity)})
     },
 
     cancelOrders: async () => {
-      await App.PredictionMarket.cancelAll({to: account, gas:3000000})
+      console.log(App.account)
+      await App.PredictionMarket.cancelAll({from: App.account, gas:3000000})
       document.getElementById("cancelMsg").innerHTML = "Done!"
     },
 
     balance: async () => {
       var wei, balance
-      account = document.getElementById("address").value
+      App.account = document.getElementById("address").value
+      console.log(App.account)
       try {
-          web3.eth.getBalance(account, function (error, wei) {
+          web3.eth.getBalance(App.account, function (error, wei) {
               if (!error) {
                   var balance = web3.fromWei(wei, 'ether');
                   document.getElementById("balance").innerHTML = balance + " ETH";
@@ -102,12 +101,13 @@ App = {
     },
     
     redeem: async () => {
-      await App.PredictionMarket.redeem(outcome, {to: account, gas:3000000})
+      console.log(App.outcome)
+      await App.PredictionMarket.redeem(App.outcome, {from: App.account, gas:3000000})
       document.getElementById("redeemMsg").innerHTML = "Done! Check your balance."
     },
 
     outcome: async () => {
-      outcome = document.getElementById("outcome").value
+      App.outcome = document.getElementById("outcome").value
       document.getElementById("outcomeMsg").innerHTML = "Done!"
     }
   }
