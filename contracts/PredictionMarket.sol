@@ -5,7 +5,7 @@ pragma solidity >=0.7.0 <0.9.0;
 contract PredictionMarket {
     uint constant NUM_OUTCOMES = 2;
     uint constant INF = 1 ether;
-    uint constant CONTRACT_VALUE = 1;
+    uint constant CONTRACT_VALUE = 1 gwei;
     
     struct Order {
         uint quantity;
@@ -13,11 +13,20 @@ contract PredictionMarket {
         address addr;
         uint outcome;
     }
+
     Order[] orders;
     mapping (address => uint[]) all_orders;
     uint[][NUM_OUTCOMES] orderbooks;
     mapping (address => uint[NUM_OUTCOMES]) pos_size;
     
+    // Additional functions for front end functionality
+    function getLength() public returns (uint) {
+        return all_orders[msg.sender].length;
+    }
+    function getOrders() public returns (uint[] memory) {
+        return all_orders[msg.sender];
+    }
+
     function math_min(uint x, uint y) private returns (uint) {
         return x >= y ? y : x;
     }
@@ -169,8 +178,12 @@ contract PredictionMarket {
         payable(msg.sender).transfer(to_refund);
         return to_refund;
     }
+
     // redeem any money you won if you bet correctly
-    function redeem(uint winning_outcome) public returns (uint) {
+    // call smart smart contarct to get winning outcome
+    function redeem(address addr) public returns (uint) {
+        Oracle1 oracle = Oracle1(addr);
+        uint winning_outcome = oracle.winner();
         require(winning_outcome < NUM_OUTCOMES);
         uint winning_shares = pos_size[msg.sender][winning_outcome];
         pos_size[msg.sender][winning_outcome] = 0;
@@ -179,4 +192,12 @@ contract PredictionMarket {
         payable(msg.sender).transfer(winnings);
         return winnings;
     }
+}
+
+abstract contract Oracle1 {
+    function report1(uint won1) external virtual;
+    function report2(uint won2) external virtual;
+    function report3(uint won3) external virtual;
+    function clear() external virtual;
+    function winner() external virtual view returns(uint);
 }
