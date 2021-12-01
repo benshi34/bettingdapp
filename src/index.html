@@ -42,18 +42,25 @@
           <button onclick="App.submitBet()" type="button">Submit</button>
           <p id="message" style="word-wrap: break-word"></p>
           
+          <h3>Bid List</h3>
+          <p>In the form of: {outcome, price, quantity}</p>
+          <div class="bid-list">
+            <ul id="taskList" class="list-unstyled">
+              <div class="bidTemplate" style="display: none">
+              <label>
+                <span class="content">Bid content goes here...</span>
+              </label>
+              </div>
+            </ul>
+            <button onclick="App.renderBids()" type="button">Refresh</button>
+          </div>
+
           <h2>Other Operations:</h2>
           <div class="form-group">
             <label>Cancel Orders: </label>
           </div>
           <button onclick="App.cancelOrders()" type="button">Submit</button>
           <p id="cancelMsg" style="word-wrap: break-word"></p>
-          <div class="form-group">
-            <label>Decided Winnning Outcome (W/O Oracle): </label>
-            <input type="text" class="form-control" id="outcome">
-          </div>
-          <button onclick="App.outcome()" type="button">Submit</button>
-          <p id="outcomeMsg" style="word-wrap: break-word"></p>
           <div class="form-group">
             <label>Redeem winnings: </label>
           </div>

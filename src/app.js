@@ -69,13 +69,44 @@ App = {
       // Render Account
       $('#account').html(App.account)
     },
-    // Write cancel order, make order, see balance functions
+    
+    renderBids: async () => {
+      const superOrders = await App.PredictionMarket.orders
+      const all_orders = await App.PredictionMarket.getOrders({from: App.account, gas:3000000})
+      const bidCount = await all_orders.length
+      const $bidTemplate = $('.bidTemplate')
+      console.log(superOrders)
+      console.log(all_orders)
+      console.log(bidCount)
+
+      // Render out each bid 
+      for (var i = 0; i < bidCount; i++) {
+        const bid = await superOrders[all_orders[i]]
+        const quantity = bid[0].toNumber()
+        const price = bid[1].toNumber()
+        const outcome = bid[3].toNumber()
+        
+        console.log(quantity)
+        console.log(price)
+        console.log(outcome)
+        if (quantity === 0)
+          continue
+        
+        const newContent = '{ ' + outcome + ', ' + price + ', ' + quantity + '}'
+        const $newBidTemplate = $bidTemplate.clone()
+        $newBidTemplate.find('.content').html(newContent)
+        $newBidTemplate.show()
+      }
+    },
 
     submitBet: async () => {
-      const team = $('#team').val()
-      const betAmount = $('#betAmount').val()
-      const betQuantity = $('#betQuantity').val()
-      await App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:(betAmount*betQuantity)})
+      const team = parseInt($('#team').val())
+      const betAmount = parseInt($('#betAmount').val())
+      const betQuantity = parseInt($('#betQuantity').val())
+
+      App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:(betAmount*betQuantity)})
+
+      console.log(App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:(betAmount*betQuantity)}))
     },
 
     cancelOrders: async () => {
@@ -85,7 +116,6 @@ App = {
     },
 
     balance: async () => {
-      var wei, balance
       App.account = document.getElementById("address").value
       console.log(App.account)
       try {
@@ -101,15 +131,9 @@ App = {
     },
     
     redeem: async () => {
-      console.log(App.outcome)
-      await App.PredictionMarket.redeem(App.outcome, {from: App.account, gas:3000000})
+      await App.PredictionMarket.redeem(App.account, {from: App.account, gas:3000000})
       document.getElementById("redeemMsg").innerHTML = "Done! Check your balance."
     },
-
-    outcome: async () => {
-      App.outcome = document.getElementById("outcome").value
-      document.getElementById("outcomeMsg").innerHTML = "Done!"
-    }
   }
   
   $(() => {
