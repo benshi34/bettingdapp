@@ -5,7 +5,6 @@ App = {
       await App.loadWeb3()
       await App.loadAccount()
       await App.loadContract()
-      await App.render() 
     },
     
     // Copied from metamask implementation, link below
@@ -52,61 +51,54 @@ App = {
     loadContract: async () => {
       // Create a JavaScript version of the smart contract
       const predictionmarket = await $.getJSON('PredictionMarket.json')
+      const oracle1 = await $.getJSON('Oracle1.json')
       App.contracts.PredictionMarket = TruffleContract(predictionmarket)
       App.contracts.PredictionMarket.setProvider(App.web3Provider)
+      App.contracts.Oracle1 = TruffleContract(oracle1)
+      App.contracts.Oracle1.setProvider(App.web3Provider)
   
       // Populate the smart contract with values from the blockchain
       App.PredictionMarket = await App.contracts.PredictionMarket.deployed()
+      App.Oracle1 = await App.contracts.Oracle1.deployed()
 
       console.log(App.PredictionMarket)
-    },
-  
-    render: async () => {
-      // Prevent double render
-      if (App.loading) {
-        return
-      }
-      // Render Account
-      $('#account').html(App.account)
+      console.log(App.Oracle1)
     },
     
     renderBids: async () => {
-      const superOrders = await App.PredictionMarket.orders
-      const all_orders = await App.PredictionMarket.getOrders({from: App.account, gas:3000000})
-      const bidCount = await all_orders.length
+      $('#bidList').empty()
+      
+      const all_orders = await App.PredictionMarket.getOrders(App.account)
+      const bidCount = all_orders.length
       const $bidTemplate = $('.bidTemplate')
-      console.log(superOrders)
-      console.log(all_orders)
-      console.log(bidCount)
+
+      console.log(all_orders) 
 
       // Render out each bid 
       for (var i = 0; i < bidCount; i++) {
-        const bid = await superOrders[all_orders[i]]
-        const quantity = bid[0].toNumber()
-        const price = bid[1].toNumber()
-        const outcome = bid[3].toNumber()
-        
-        console.log(quantity)
-        console.log(price)
-        console.log(outcome)
-        if (quantity === 0)
+        var quantity = await App.PredictionMarket.getBidQuant(all_orders[i])
+        var price = await App.PredictionMarket.getBidPrice(all_orders[i])
+        var outcome = await App.PredictionMarket.getBidOutcome(all_orders[i])
+
+        price = price / 1e18
+
+        if (parseInt(quantity) === 0) {
           continue
+        }
         
         const newContent = '{ ' + outcome + ', ' + price + ', ' + quantity + '}'
-        const $newBidTemplate = $bidTemplate.clone()
-        $newBidTemplate.find('.content').html(newContent)
-        $newBidTemplate.show()
+        console.log(newContent)
+
+        $('#bidList').append('<li>' + newContent + '</li>')
       }
     },
 
     submitBet: async () => {
       const team = parseInt($('#team').val())
-      const betAmount = parseInt($('#betAmount').val())
+      const betAmount = parseFloat($('#betAmount').val())
       const betQuantity = parseInt($('#betQuantity').val())
 
-      App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:(betAmount*betQuantity)})
-
-      console.log(App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:(betAmount*betQuantity)}))
+      App.PredictionMarket.bid(betAmount, betQuantity, team, {from: App.account, gas:3000000, value:((betAmount*1e18)*betQuantity)})
     },
 
     cancelOrders: async () => {
@@ -131,9 +123,23 @@ App = {
     },
     
     redeem: async () => {
-      await App.PredictionMarket.redeem(App.account, {from: App.account, gas:3000000})
+      console.log(App.winner)
+      console.log(typeof(App.winner))
+      await App.PredictionMarket.redeem(App.winner, {from: App.account, gas: 3000000})
       document.getElementById("redeemMsg").innerHTML = "Done! Check your balance."
     },
+
+    oracleReport: async () => {
+      var num1 = parseInt(document.getElementById("report1").value)
+      var num2 = parseInt(document.getElementById("report2").value)
+      var num3 = parseInt(document.getElementById("report3").value)
+      console.log(num1)
+      console.log(num2)
+      console.log(num3)
+      console.log(App.Oracle1.winner(num1, num2, num3, {gas:3000000}))
+      App.winner = await App.Oracle1.winner(num1, num2, num3, {gas:3000000})
+      document.getElementById("oracleMessage").innerHTML = "Winner Confirmed!"
+    }
   }
   
   $(() => {

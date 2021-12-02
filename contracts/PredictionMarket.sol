@@ -4,8 +4,8 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract PredictionMarket {
     uint constant NUM_OUTCOMES = 2;
-    uint constant INF = 1 ether;
-    uint constant CONTRACT_VALUE = 1 gwei;
+    uint constant INF = 1<<200;
+    uint constant CONTRACT_VALUE = 10 ether;
     
     struct Order {
         uint quantity;
@@ -15,16 +15,27 @@ contract PredictionMarket {
     }
 
     Order[] orders;
-    mapping (address => uint[]) all_orders;
+    mapping (address => uint[]) public all_orders;
     uint[][NUM_OUTCOMES] orderbooks;
     mapping (address => uint[NUM_OUTCOMES]) pos_size;
+    address oracle_address;
     
-    // Additional functions for front end functionality
-    function getLength() public returns (uint) {
-        return all_orders[msg.sender].length;
+    constructor(address oracle_addr) {
+        oracle_address = oracle_addr;
     }
-    function getOrders() public returns (uint[] memory) {
-        return all_orders[msg.sender];
+    
+    // Additional functions for front end
+    function getOrders(address addr) public view returns(uint[] memory) {
+        return all_orders[addr];
+    }
+    function getBidQuant(uint id) public view returns(uint) {
+        return orders[id].quantity;
+    }
+    function getBidPrice(uint id) public view returns(uint) {
+        return orders[id].price;
+    }
+    function getBidOutcome(uint id) public view returns(uint) {
+        return orders[id].outcome;
     }
 
     function math_min(uint x, uint y) private returns (uint) {
@@ -137,7 +148,9 @@ contract PredictionMarket {
         return true;
     }
     // submit a new bid for any outcome
+    // price is in ether
     function bid(uint price, uint quantity, uint outcome) public payable returns (uint) {
+        price = price * 1e18;
         require(price > 0, 'price must be positive');
         require(quantity > 0, 'quantity must be positive');
         require(outcome < NUM_OUTCOMES, 'outcome is between 0 ... NUM_OUTCOMES-1');
@@ -174,16 +187,12 @@ contract PredictionMarket {
         uint to_refund = 0;
         for (uint i = 0; i < all_orders[msg.sender].length; i++)
             to_refund += cancel(all_orders[msg.sender][i], INF);
-        assert(address(this).balance >= to_refund);
-        payable(msg.sender).transfer(to_refund);
         return to_refund;
     }
-
     // redeem any money you won if you bet correctly
     // call smart smart contarct to get winning outcome
-    function redeem(address addr) public returns (uint) {
-        Oracle1 oracle = Oracle1(addr);
-        uint winning_outcome = oracle.winner();
+    function redeem(uint winner) public returns (uint) {
+        uint winning_outcome = winner;
         require(winning_outcome < NUM_OUTCOMES);
         uint winning_shares = pos_size[msg.sender][winning_outcome];
         pos_size[msg.sender][winning_outcome] = 0;
@@ -194,10 +203,73 @@ contract PredictionMarket {
     }
 }
 
-abstract contract Oracle1 {
-    function report1(uint won1) external virtual;
-    function report2(uint won2) external virtual;
-    function report3(uint won3) external virtual;
-    function clear() external virtual;
-    function winner() external virtual view returns(uint);
+contract Oracle1 {
+    uint NUM_OUTCOMES;
+    uint[3] private reports;
+    uint[3] private inputs;
+
+    // outcomers flexible
+    constructor(uint outcomes) {
+        NUM_OUTCOMES = outcomes;
+        inputs[0] = 0;
+        inputs[1] = 0;
+        inputs[2] = 0;
+    }
+
+    // determine winner through external oracles
+    function report1(uint won1) public {
+        require(won1 < NUM_OUTCOMES, "Result out of bounds");
+        require(inputs[0] == 0, "Only one input permitted");
+        inputs[0]++;
+        reports[0] = won1;
+    }
+
+    // ensure that can't change report after the fact
+    function report2(uint won2) public {
+        require(won2 < NUM_OUTCOMES, "Result out of bounds");
+        require(inputs[1] == 0, "Only one input permitted");
+        inputs[1]++;
+        reports[1] = won2;
+    }
+
+    function report3(uint won3) public {
+        require(won3 < NUM_OUTCOMES, "Result out of bounds");
+        require(inputs[2] == 0, "Only one input permitted");
+        inputs[2]++;
+        reports[2] = won3;
+    }
+
+    function clear() public {
+        delete reports;
+        inputs[0] = 0;
+        inputs[1] = 0;
+        inputs[2] = 0;
+    }
+
+    // most often as consensus - defaults to report1 if inconclusive
+    function winner(uint first, uint second, uint third) public returns(uint) {
+        report1(first);
+        report2(second);
+        report3(third);
+        
+        uint  modeValue;
+        uint[] memory count = new uint[](NUM_OUTCOMES); 
+        uint number; 
+        uint maxIndex = 0;
+        
+        for (uint i = 0; i < reports.length; i += 1) {
+            number = reports[i];
+            count[number] = (count[number]) + 1;
+            if (count[number] > count[maxIndex]) {
+                maxIndex = number;
+            }
+        }
+        for (uint i = 0; i < count.length; i++) {
+            if (count[i] == maxIndex) {
+                modeValue=count[i];
+                break;
+            }
+        }
+        return modeValue;
+    }       
 }
