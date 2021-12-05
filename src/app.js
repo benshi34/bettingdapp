@@ -124,8 +124,7 @@ App = {
     
     redeem: async () => {
       console.log(App.winner)
-      console.log(typeof(App.winner))
-      await App.PredictionMarket.redeem(App.winner, {from: App.account, gas: 3000000})
+      App.PredictionMarket.redeem(App.winner, {from: App.account, gas: 3000000})
       document.getElementById("redeemMsg").innerHTML = "Done! Check your balance."
     },
 
@@ -133,11 +132,23 @@ App = {
       var num1 = parseInt(document.getElementById("report1").value)
       var num2 = parseInt(document.getElementById("report2").value)
       var num3 = parseInt(document.getElementById("report3").value)
-      console.log(num1)
-      console.log(num2)
-      console.log(num3)
-      console.log(App.Oracle1.winner(num1, num2, num3, {gas:3000000}))
-      App.winner = await App.Oracle1.winner(num1, num2, num3, {gas:3000000})
+      
+      var counts = [0, 0]
+      counts[num1] += 1
+      counts[num2] += 1
+      counts[num3] += 1
+      
+      if (counts[0] > counts[1]) {
+        App.winner = 0
+      }
+      else if (counts[1] > counts[0]) {
+        App.winner = 1
+      }
+      else {
+        App.winner = num1;
+      }
+
+      console.log(App.winner)
       document.getElementById("oracleMessage").innerHTML = "Winner Confirmed!"
     }
   }

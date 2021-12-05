@@ -19,6 +19,7 @@ contract PredictionMarket {
     uint[][NUM_OUTCOMES] orderbooks;
     mapping (address => uint[NUM_OUTCOMES]) pos_size;
     address oracle_address;
+    uint public temp;
     
     constructor(address oracle_addr) {
         oracle_address = oracle_addr;
@@ -195,11 +196,16 @@ contract PredictionMarket {
         uint winning_outcome = winner;
         require(winning_outcome < NUM_OUTCOMES);
         uint winning_shares = pos_size[msg.sender][winning_outcome];
+        temp = pos_size[msg.sender][winning_outcome];
         pos_size[msg.sender][winning_outcome] = 0;
         uint winnings = winning_shares * CONTRACT_VALUE;
         assert(address(this).balance >= winnings);
         payable(msg.sender).transfer(winnings);
         return winnings;
+    }
+
+    function returnTemp() public view returns (uint) {
+        return temp;
     }
 }
 
@@ -240,7 +246,9 @@ contract Oracle1 {
     }
 
     function clear() public {
-        delete reports;
+        reports[0] = 0;
+        reports[1] = 0;
+        reports[2] = 0;
         inputs[0] = 0;
         inputs[1] = 0;
         inputs[2] = 0;
@@ -248,28 +256,25 @@ contract Oracle1 {
 
     // most often as consensus - defaults to report1 if inconclusive
     function winner(uint first, uint second, uint third) public returns(uint) {
-        report1(first);
-        report2(second);
-        report3(third);
-        
-        uint  modeValue;
+        uint modeValue;
         uint[] memory count = new uint[](NUM_OUTCOMES); 
-        uint number; 
-        uint maxIndex = 0;
         
-        for (uint i = 0; i < reports.length; i += 1) {
-            number = reports[i];
-            count[number] = (count[number]) + 1;
-            if (count[number] > count[maxIndex]) {
-                maxIndex = number;
-            }
+        count[first]++;
+        count[second]++;
+        count[third]++;
+
+        if (count[0] > count[1]) {
+            modeValue = count[0];
         }
-        for (uint i = 0; i < count.length; i++) {
-            if (count[i] == maxIndex) {
-                modeValue=count[i];
-                break;
-            }
+        else if (count[0] < count[1]) {
+            modeValue = count[1];
         }
+        else {
+            modeValue = first;
+        }
+
+        clear();
+
         return modeValue;
     }       
 }
